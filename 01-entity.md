@@ -183,6 +183,22 @@ const account = Account.withId(result.id, Email.create(email));
 
 ---
 
+
+### 📦 Ubicación sugerida en tu monorepo
+
+```
+packages/
+  domain/
+    <bounded-context>/
+      entities/
+        account.entity.ts
+        user.entity.ts
+      services/
+        account-domain.service.ts
+      repositories/
+        account.repository.ts
+```
+
 ## ✅ Conclusión
 
 > En DDD, una Entity **representa un objeto del negocio que tiene identidad y comportamiento**.  
