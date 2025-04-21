@@ -162,6 +162,127 @@ export class ActiveStatus {
 
 ---
 
+
+
+## ✅ ¿Se puede tener un VO que contenga un array?
+
+**Sí, totalmente.** Un Value Object puede encapsular un array siempre y cuando:
+
+- El array **represente un concepto del dominio**
+- Se controle la **inmutabilidad**
+- Se impongan reglas sobre su contenido
+
+---
+
+## 🧱 Ejemplo de VO: `WeekDays`
+
+Representa los días activos de una semana.
+
+```ts
+export class WeekDays {
+  private static readonly VALID_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+  private constructor(private readonly days: string[]) {}
+
+  static create(days: string[]): WeekDays {
+    const normalized = Array.from(new Set(days.map(d => d.toLowerCase().trim())));
+    const invalid = normalized.filter(d => !WeekDays.VALID_DAYS.includes(d));
+    if (invalid.length > 0) throw new Error(`Días inválidos: ${invalid.join(', ')}`);
+    return new WeekDays(normalized);
+  }
+
+  getValues(): string[] {
+    return [...this.days];
+  }
+
+  includes(day: string): boolean {
+    return this.days.includes(day.toLowerCase());
+  }
+
+  isEmpty(): boolean {
+    return this.days.length === 0;
+  }
+
+  count(): number {
+    return this.days.length;
+  }
+}
+```
+
+### 🧪 Uso:
+
+```ts
+const week = WeekDays.create(['mon', 'tue', 'fri']);
+console.log(week.getValues());       // ['mon', 'tue', 'fri']
+console.log(week.includes('TUE'));   // true
+console.log(week.count());           // 3
+```
+
+---
+
+## 🧱 Ejemplo de VO: `Tags`
+
+Permite agregar, eliminar y verificar etiquetas únicas.
+
+```ts
+export class Tags {
+  private constructor(private readonly tags: string[]) {}
+
+  static create(values: string[]): Tags {
+    const unique = Array.from(new Set(values.map(v => v.toLowerCase().trim())));
+    return new Tags(unique);
+  }
+
+  getValues(): string[] {
+    return [...this.tags];
+  }
+
+  add(...newTags: string[]): Tags {
+    const combined = [...this.tags, ...newTags.map(t => t.toLowerCase().trim())];
+    const unique = Array.from(new Set(combined));
+    return new Tags(unique);
+  }
+
+  remove(tag: string): Tags {
+    const filtered = this.tags.filter(t => t !== tag.toLowerCase());
+    return new Tags(filtered);
+  }
+
+  has(tag: string): boolean {
+    return this.tags.includes(tag.toLowerCase());
+  }
+
+  count(): number {
+    return this.tags.length;
+  }
+}
+```
+
+### 🧪 Uso:
+
+```ts
+const tags = Tags.create(['dev', 'backend']);
+const updated = tags.add('frontend', 'fullstack');
+
+console.log(tags.getValues());       // ['dev', 'backend']
+console.log(updated.getValues());   // ['dev', 'backend', 'frontend', 'fullstack']
+
+const reduced = updated.remove('backend');
+console.log(reduced.getValues());   // ['dev', 'frontend', 'fullstack']
+```
+
+---
+
+## 🔐 Reglas para VO con arrays
+
+- **Nunca expongas el array directamente** (`.slice()` o spread siempre)
+- **Siempre devuelve nuevas instancias** para mutaciones
+- **Agrega validaciones de negocio** como máximo número de elementos, unicidad, o formato
+
+
+
+
+
 ## 📦 Ubicación sugerida en tu monorepo
 
 ```bash
@@ -175,6 +296,7 @@ packages/
 ```
 
 ---
+
 
 ## ✅ Conclusión
 
